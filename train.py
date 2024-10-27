@@ -134,4 +134,3 @@ def train(model, num_epochs=2, batch_size=16, learning_rate=0.01):
     plt.ylabel('Accuracy (%)')
     plt.title('Test Accuracy')
     plt.savefig('test_accuracy.png')
-    
