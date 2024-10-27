@@ -1,3 +1,13 @@
+from model import CustomCNN
+import os
+import torch
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+import torch.nn as nn
+import torch.optim as optim
+import matplotlib.pyplot as plt
+
 def train(model, num_epochs=2, batch_size=16, learning_rate=0.01):
 
     # Définir les transformations pour le dataset (à ajuster selon vos besoins)
@@ -124,3 +134,4 @@ def train(model, num_epochs=2, batch_size=16, learning_rate=0.01):
     plt.ylabel('Accuracy (%)')
     plt.title('Test Accuracy')
     plt.savefig('test_accuracy.png')
+    
