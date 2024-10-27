@@ -103,5 +103,3 @@ def adapter_dataset():
         print(f"  Valid : {count['valid']} images")
         print(f"  Test  : {count['test']} images")
 
-# Exécution de la fonction principale
-adapter_dataset()
