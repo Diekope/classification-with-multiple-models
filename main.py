@@ -1,3 +1,8 @@
 from making_dataset import adapter_dataset
+from model import *
 
-adapter_dataset()
+
+greg = CustomCNN(9)
+print(greg)
+
+#adapter_dataset()
