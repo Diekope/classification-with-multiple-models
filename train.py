@@ -1,13 +1,3 @@
-from model import CustomCNN
-import os
-import torch
-from torchvision import datasets, transforms
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-import torch.nn as nn
-import torch.optim as optim
-import matplotlib.pyplot as plt
-
 def train(model, num_epochs=2, batch_size=16, learning_rate=0.01):
 
     # Définir les transformations pour le dataset (à ajuster selon vos besoins)
@@ -24,6 +14,10 @@ def train(model, num_epochs=2, batch_size=16, learning_rate=0.01):
             print("Le chemin n'existe pas, veuillez vérifier.")
             root = input("Veuillez entrer le chemin vers la racine du dataset : ")
 
+    # Détection de l'appareil (GPU si disponible)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
     # Chargement des datasets
     train_dataset = datasets.ImageFolder(root=f"{root}/train", transform=transform)
     valid_dataset = datasets.ImageFolder(root=f"{root}/valid", transform=transform)
@@ -38,6 +32,7 @@ def train(model, num_epochs=2, batch_size=16, learning_rate=0.01):
     print(f"Nombre de classes : {num_classes}")
 
     # Configurer le modèle
+    model = model.to(device)  # Déplacer le modèle sur le bon appareil
     model.train()  # Mettre le modèle en mode entraînement
 
     # Définir le critère de perte et l'optimiseur
@@ -55,6 +50,9 @@ def train(model, num_epochs=2, batch_size=16, learning_rate=0.01):
 
         for i, (inputs, labels) in enumerate(train_loader, 1):
             optimizer.zero_grad()
+
+            # Déplacer les données sur l'appareil
+            inputs, labels = inputs.to(device), labels.to(device)
 
             # Forward pass
             outputs = model(inputs)
@@ -80,6 +78,7 @@ def train(model, num_epochs=2, batch_size=16, learning_rate=0.01):
         total = 0
         with torch.no_grad():
             for inputs, labels in valid_loader:
+                inputs, labels = inputs.to(device), labels.to(device)
                 outputs = model(inputs)
                 _, predicted = torch.max(outputs.data, 1)
                 total += labels.size(0)
@@ -111,6 +110,7 @@ def train(model, num_epochs=2, batch_size=16, learning_rate=0.01):
     total = 0
     with torch.no_grad():
         for inputs, labels in test_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
