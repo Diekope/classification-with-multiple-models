@@ -97,6 +97,11 @@ def train(model, num_epochs=2, batch_size=16, learning_rate=0.01):
         valid_accuracies.append(accuracy)
         print(f"Validation Accuracy: {accuracy:.2f}%")
 
+    # Enregistrer le modèle
+    model_save_path = "trained_model.pth"
+    torch.save(model.state_dict(), model_save_path)
+    print(f"Modèle enregistré à : {model_save_path}")
+
     # Enregistrer les graphiques de la perte et de la précision
     plt.figure()
     plt.plot(range(1, num_epochs + 1), train_losses, label='Training Loss')
