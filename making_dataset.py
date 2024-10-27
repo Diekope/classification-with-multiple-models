@@ -38,7 +38,7 @@ def adapter_dataset():
 
     # Nouveau dossier basé sur le nom du dataset
     dataset_name = os.path.basename(dataset_path)
-    transformed_dataset_path = os.path.join(os.path.dirname(dataset_path), dataset_name + ' - rangé')
+    transformed_dataset_path = os.path.join(os.path.dirname(dataset_path), dataset_name + '-rangé')
 
     # Dossiers de sortie
     output_dirs = ['train', 'valid', 'test']
