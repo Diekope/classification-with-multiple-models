@@ -3,4 +3,8 @@
 /RealWaste/
 /pollen/
 /__pycache__/
+/Pollen dataset/
+/Pollen_dataset/
+trained_modelCNNcustom.pth
+trained_model.pth
 /.idea/

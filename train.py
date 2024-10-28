@@ -1,4 +1,4 @@
-from model import CustomCNN
+from model import GoogleNet
 import os
 import torch
 from torchvision import datasets, transforms
@@ -7,12 +7,40 @@ from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+from sklearn.metrics import confusion_matrix
+import itertools
 
-def train(model, num_epochs=2, batch_size=16, learning_rate=0.01):
+
+def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion Matrix', cmap=plt.cm.Blues):
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=90)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.tight_layout()
+
+
+def train(model, num_epochs=100, batch_size=128, learning_rate=0.0001):
 
     # Définir les transformations pour le dataset (à ajuster selon vos besoins)
     transform = transforms.Compose([
-        transforms.Resize((524, 524)),
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
@@ -102,22 +130,52 @@ def train(model, num_epochs=2, batch_size=16, learning_rate=0.01):
     torch.save(model.state_dict(), model_save_path)
     print(f"Modèle enregistré à : {model_save_path}")
 
-    # Enregistrer les graphiques de la perte et de la précision
-    plt.figure()
-    plt.plot(range(1, num_epochs + 1), train_losses, label='Training Loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.title('Training Loss over Epochs')
-    plt.legend()
-    plt.savefig('training_loss.png')
+    # Enregistrer les graphiques de la perte, de la précision et de la heatmap
+    fig, axes = plt.subplots(2, 2, figsize=(18, 12))
 
-    plt.figure()
-    plt.plot(range(1, num_epochs + 1), valid_accuracies, label='Validation Accuracy')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy (%)')
-    plt.title('Validation Accuracy over Epochs')
-    plt.legend()
-    plt.savefig('validation_accuracy.png')
+    # Graphe de la perte d'entraînement
+    axes[0, 0].plot(range(1, num_epochs + 1), train_losses, label='Training Loss', color='b')
+    axes[0, 0].set_xlabel('Epoch')
+    axes[0, 0].set_ylabel('Loss')
+    axes[0, 0].set_title('Training Loss over Epochs')
+    axes[0, 0].legend()
+
+    # Graphe de la précision de validation
+    axes[0, 1].plot(range(1, num_epochs + 1), valid_accuracies, label='Validation Accuracy', color='g')
+    axes[0, 1].set_xlabel('Epoch')
+    axes[0, 1].set_ylabel('Accuracy (%)')
+    axes[0, 1].set_title('Validation Accuracy over Epochs')
+    axes[0, 1].legend()
+
+    # Heatmap des métriques
+    metrics = np.array([train_losses, valid_accuracies])
+    sns.heatmap(metrics, annot=True, fmt='.2f', ax=axes[1, 0], cmap='viridis', cbar=True, yticklabels=['Loss', 'Accuracy'])
+    axes[1, 0].set_title('Heatmap of Training Loss and Validation Accuracy')
+
+    # Confusion matrix
+    model.eval()
+    all_preds = []
+    all_labels = []
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            _, predicted = torch.max(outputs.data, 1)
+            all_preds.extend(predicted.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+
+    cm = confusion_matrix(all_labels, all_preds)
+    plot_confusion_matrix(cm, classes=train_dataset.classes, normalize=True, title='Confusion Matrix Normalized', cmap=plt.cm.Blues)
+    axes[1, 1].imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+    axes[1, 1].set_title('Confusion Matrix Normalized')
+    axes[1, 1].set_xticks(np.arange(len(train_dataset.classes)))
+    axes[1, 1].set_yticks(np.arange(len(train_dataset.classes)))
+    axes[1, 1].set_xticklabels(train_dataset.classes, rotation=90)
+    axes[1, 1].set_yticklabels(train_dataset.classes)
+
+    # Sauvegarder l'image combinée
+    plt.tight_layout()
+    plt.savefig('training_metrics.png')
 
     # Tester le modèle sur l'ensemble de test
     model.eval()
@@ -135,7 +193,7 @@ def train(model, num_epochs=2, batch_size=16, learning_rate=0.01):
 
     # Enregistrer le graphique de la précision du test
     plt.figure()
-    plt.bar(['Test Accuracy'], [test_accuracy])
+    plt.bar(['Test Accuracy'], [test_accuracy], color='c')
     plt.ylabel('Accuracy (%)')
     plt.title('Test Accuracy')
     plt.savefig('test_accuracy.png')
