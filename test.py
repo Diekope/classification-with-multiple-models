@@ -1,4 +1,3 @@
-
 from model import GoogleNet
 import torch
 from torchvision import transforms
@@ -6,7 +5,7 @@ from PIL import Image
 
 # Charger l'architecture du modèle
 model = GoogleNet(9)
-model.load_state_dict(torch.load("trained_model.pth", map_location=torch.device(0), weights_only=True))  # Remplacez "votre_modele.pth" par le nom de votre fichier
+model.load_state_dict(torch.load("trained_model_google.pth", map_location=torch.device('cpu'), weights_only=True))  # Remplacez "votre_modele.pth" par le nom de votre fichier
 model.eval()  # Mettre le modèle en mode évaluation
 
 ### Étape 2: Transformer l'image
@@ -30,6 +29,6 @@ def predict(image_path):
     return predicted.item()  # Retourner l'indice de la classe prédite
 
 # Exemple d'utilisation
-image_path = "paa.png"  # Remplacez par le chemin de votre image
+image_path = "test/boubou.png"  # Remplacez par le chemin de votre image
 classe_predite = predict(image_path)
 print(f"Classe prédite : {classe_predite}")
