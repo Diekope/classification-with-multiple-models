@@ -1,4 +1,4 @@
-from model import GoogleNet
+from models import GoogleNet
 import torch
 from torchvision import transforms
 from PIL import Image
