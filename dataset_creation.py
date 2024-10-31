@@ -12,10 +12,12 @@ def adapter_dataset():
     """
 
     # Chemin du dataset brut
-    dataset_path = input("Veuillez entrer le chemin de votre dataset brut : ")
+    dataset_path = input("Veuillez entrer le nom de votre dataset brut : ")
+    dataset_path = "datasets/"+dataset_path
     if not os.path.exists(dataset_path):
-        print("Le chemin n'existe pas, veuillez vérifier.")
-        dataset_path = input("Veuillez entrer le chemin de votre dataset brut : ")
+        while not os.path.exists(dataset_path):
+            print("Le fichier n'existe pas, veuillez vérifier.")
+            dataset_path = input("Veuillez entrer le nom de votre dataset brut : ")
 
     train_percent = int(input("Quel pourcentage de données d'entraînement voulez-vous : "))
     if (train_percent < 50 or train_percent > 90):
@@ -31,14 +33,9 @@ def adapter_dataset():
 
     test_percent = 1 - (train_percent + valid_percent)
 
-    # Vérifie si le chemin existe
-    if not os.path.exists(dataset_path):
-        print(f"Le chemin '{dataset_path}' n'existe pas.")
-        return
-
     # Nouveau dossier basé sur le nom du dataset
     dataset_name = os.path.basename(dataset_path)
-    transformed_dataset_path = os.path.join(os.path.dirname(dataset_path), dataset_name + '-rangé')
+    transformed_dataset_path = os.path.join(os.path.dirname(dataset_path), dataset_name + '-adapted')
 
     # Dossiers de sortie
     output_dirs = ['train', 'valid', 'test']
@@ -102,4 +99,3 @@ def adapter_dataset():
         print(f"  Train : {count['train']} images")
         print(f"  Valid : {count['valid']} images")
         print(f"  Test  : {count['test']} images")
-
