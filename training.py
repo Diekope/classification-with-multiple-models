@@ -106,7 +106,7 @@ def train(model):
     # Création d'un répertoire pour chaque run
     run_name = input("Veuillez entrer un nom pour cette session d'entraînement (run) : ")
     model_name = model.__class__.__name__
-    run_dir = os.path.join("runs", f"run_{model_name}_{run_name}_{datetime.now().strftime('%Y/%m/%d')}")
+    run_dir = os.path.join("runs", f"run_{model_name}_{run_name}_{datetime.now().strftime('%Y%m%d')}")
     os.makedirs(run_dir, exist_ok=True)
     metrics_dir = os.path.join(run_dir, "metrics")
     os.makedirs(metrics_dir, exist_ok=True)
