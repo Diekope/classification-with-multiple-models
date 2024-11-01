@@ -1,4 +1,3 @@
-# training.py
 import os
 import torch
 from torchvision import datasets, transforms
@@ -11,6 +10,7 @@ import seaborn as sns
 import numpy as np
 from sklearn.metrics import confusion_matrix
 import itertools
+from datetime import datetime
 from models import BaseModel
 
 def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion Matrix', cmap=plt.cm.Blues):
@@ -34,32 +34,6 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion Matrix'
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.tight_layout()
-
-
-# training.py
-
-def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion Matrix', cmap=plt.cm.Blues):
-    if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-
-    plt.imshow(cm, interpolation='nearest', cmap=cmap)
-    plt.title(title)
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=90)
-    plt.yticks(tick_marks, classes)
-
-    fmt = '.2f' if normalize else 'd'
-    thresh = cm.max() / 2.
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, format(cm[i, j], fmt),
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
-
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    plt.tight_layout()
-
 
 def train(model):
     print("# ------------\n# Entrainement\n# ------------")
@@ -129,7 +103,16 @@ def train(model):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-    # (Suite de l'entraînement inchangée)
+    # Création d'un répertoire pour chaque run
+    run_name = input("Veuillez entrer un nom pour cette session d'entraînement (run) : ")
+    model_name = model.__class__.__name__
+    run_dir = os.path.join("runs", f"run1_{model_name}_{run_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+    os.makedirs(run_dir, exist_ok=True)
+    metrics_dir = os.path.join(run_dir, "metrics")
+    os.makedirs(metrics_dir, exist_ok=True)
+
+    # Enregistrement du modèle
+    model_save_path = os.path.join(run_dir, f"{model_name}_saved_model.pth")
 
     # Initialiser les listes pour stocker les métriques
     train_losses = []
@@ -179,8 +162,7 @@ def train(model):
         valid_accuracies.append(accuracy)
         print(f"Validation Accuracy: {accuracy:.2f}%")
 
-    # Enregistrer le modèle
-    model_save_path = "trained_model.pth"
+    # Sauvegarder le modèle
     torch.save(model.state_dict(), model_save_path)
     print(f"Modèle enregistré à : {model_save_path}")
 
@@ -222,16 +204,12 @@ def train(model):
     cm = confusion_matrix(all_labels, all_preds)
     plot_confusion_matrix(cm, classes=train_dataset.classes, normalize=True, title='Confusion Matrix Normalized',
                           cmap=plt.cm.Blues)
-    axes[1, 1].imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
-    axes[1, 1].set_title('Confusion Matrix Normalized')
-    axes[1, 1].set_xticks(np.arange(len(train_dataset.classes)))
-    axes[1, 1].set_yticks(np.arange(len(train_dataset.classes)))
-    axes[1, 1].set_xticklabels(train_dataset.classes, rotation=90)
-    axes[1, 1].set_yticklabels(train_dataset.classes)
 
-    # Sauvegarder l'image combinée
+    # Sauvegarder l'image combinée dans le dossier metrics
+    metrics_image_path = os.path.join(metrics_dir, "training_metrics.png")
     plt.tight_layout()
-    plt.savefig('training_metrics.png')
+    plt.savefig(metrics_image_path)
+    print(f"Graphiques de métriques enregistrés à : {metrics_image_path}")
 
     # Tester le modèle sur l'ensemble de test
     model.eval()
@@ -248,8 +226,10 @@ def train(model):
     print(f"Test Accuracy: {test_accuracy:.2f}%")
 
     # Enregistrer le graphique de la précision du test
+    test_accuracy_image_path = os.path.join(metrics_dir, "test_accuracy.png")
     plt.figure()
     plt.bar(['Test Accuracy'], [test_accuracy], color='c')
     plt.ylabel('Accuracy (%)')
     plt.title('Test Accuracy')
-    plt.savefig('test_accuracy.png')
+    plt.savefig(test_accuracy_image_path)
+    print(f"Précision du test enregistrée à : {test_accuracy_image_path}")
