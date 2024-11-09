@@ -4,8 +4,8 @@ from torchvision import transforms
 from PIL import Image
 
 # Charger l'architecture du modèle
-model = GoogleNet(9)
-model.load_state_dict(torch.load("trained_model_google.pth", map_location=torch.device('cpu'), weights_only=True))  # Remplacez "votre_modele.pth" par le nom de votre fichier
+model = GoogleNet(12)
+model.load_state_dict(torch.load("GoogleNet_saved_model.pth", map_location=torch.device('cpu'), weights_only=True))  # Remplacez "votre_modele.pth" par le nom de votre fichier
 model.eval()  # Mettre le modèle en mode évaluation
 
 ### Étape 2: Transformer l'image
